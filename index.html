@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz «Спаси Планету!»</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f0fdf4;
+            background-image: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            color: #1a2e05;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .card {
+            border-radius: 2.5rem;
+            background: #e9f6ff;
+            box-shadow: 
+                -10px -10px 20px #ffffff,
+                10px 10px 20px rgba(189, 217, 250, 0.4);
+        }
+        .btn-option {
+            transition: all 0.2s ease-in-out;
+            background-color: #d1fae5;
+            border: none;
+            box-shadow: 
+                -5px -5px 10px #ffffff,
+                5px 5px 10px rgba(189, 217, 250, 0.4);
+        }
+        .btn-option:hover:not(.disabled):not(.correct):not(.incorrect) {
+            transform: translateY(-4px);
+            background-color: #a7f3d0;
+            box-shadow: 
+                inset -5px -5px 10px #ffffff,
+                inset 5px 5px 10px rgba(189, 217, 250, 0.4);
+        }
+        .correct {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.5);
+        }
+        .incorrect {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .earth-image {
+            box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+        }
+        #quiz-status {
+            animation: fadein 1s;
+        }
+        @keyframes fadein {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .chat-container {
+            border-radius: 1.5rem;
+            background: #e0f2fe;
+            box-shadow: 
+                inset -5px -5px 10px #ffffff,
+                inset 5px 5px 10px rgba(189, 217, 250, 0.4);
+            animation: slide-up 0.5s ease-out;
+        }
+        @keyframes slide-up {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+<div id="quiz-container" class="container bg-white p-8 md:p-12 card transition-all duration-500">
+    <header class="text-center mb-6 md:mb-8">
+        <div class="flex items-center justify-center mb-4">
+            <img src="https://i.pinimg.com/736x/99/cd/e9/99cde9e897edd8f368fc9d828c88546c.jpg" alt="Планета Земля" class="h-16 w-16 rounded-full earth-image">
+        </div>
+        <h1 class="text-3xl md:text-5xl font-bold mb-2 text-[#1a2e05]">Спаси Планету!</h1>
+        <p class="text-lg md:text-xl text-gray-600">Экологическая миссия</p>
+    </header>
+
+    <main id="quiz-content" class="text-center">
+        <!-- Quiz will be rendered here -->
+    </main>
+</div>
+
+<script>
+    const allQuestions = [
+        // Level 1: Новичок (10 вопросов)
+        {
+            level: 'Новичок',
+            question: 'Когда мы сжигаем топливо в машинах и на заводах, какой газ выделяется?',
+            options: ['Кислород', 'Метан', 'Углекислый газ', 'Оксиды азота'],
+            answer: 'Углекислый газ',
+            hint: 'Подумай, какой газ мы выдыхаем, а деревья поглощают. Он образуется при горении.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Что делает озоновый слой для нашей планеты?',
+            options: ['Удерживает водяной пар', 'Защищает от ультрафиолетового излучения', 'Обеспечивает круговорот кислорода', 'Снижает температуру воздуха'],
+            answer: 'Защищает от ультрафиолетового излучения',
+            hint: 'Озоновый слой — это невидимый щит. Он защищает нас от вредных лучей, которые могут прийти от Солнца.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Как называются вещества, которыми брызгают поля, чтобы убить вредных насекомых и сорняки?',
+            options: ['Ферменты', 'Удобрения', 'Пестициды', 'Гербициды'],
+            answer: 'Пестициды',
+            hint: 'Название этих веществ происходит от латинского слова, которое означает «вредитель».'
+        },
+        {
+            level: 'Новичок',
+            question: 'Что такое переработка отходов?',
+            options: ['Сжигание мусора', 'Захоронение отходов', 'Превращение старых вещей в новые', 'Вывоз мусора на свалку'],
+            answer: 'Превращение старых вещей в новые',
+            hint: 'Это процесс, который позволяет давать вторую жизнь пластику, стеклу и бумаге.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Какой вид транспорта является самым экологически чистым?',
+            options: ['Автомобиль', 'Самолет', 'Велосипед', 'Мотоцикл'],
+            answer: 'Велосипед',
+            hint: 'Этот транспорт не использует топливо и не выделяет выхлопных газов.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Как можно помочь птицам и белкам зимой?',
+            options: ['Оставлять мусор в лесу', 'Вырубать деревья', 'Строить кормушки и оставлять еду', 'Кормить хлебом'],
+            answer: 'Строить кормушки и оставлять еду',
+            hint: 'Зимой животным бывает трудно найти пищу. Маленькая помощь может спасти их.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Почему важно выключать воду, когда чистишь зубы?',
+            options: ['Чтобы не мешать соседям', 'Чтобы не залить ванную', 'Чтобы сэкономить пресную воду', 'Чтобы не было шума'],
+            answer: 'Чтобы сэкономить пресную воду',
+            hint: 'Капля за каплей — это большая потеря ценного ресурса, который необходим всем.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Что загрязняет реки и озёра, вредя рыбам и другим водным животным?',
+            options: ['Дождь', 'Тающий снег', 'Отходы из заводов и фабрик', 'Солнечный свет'],
+            answer: 'Отходы из заводов и фабрик',
+            hint: 'Подумай о том, что люди сливают в воду из промышленных труб.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Какой мусор разлагается дольше всего?',
+            options: ['Бумага', 'Пластиковая бутылка', 'Фруктовая кожура', 'Ткань'],
+            answer: 'Пластиковая бутылка',
+            hint: 'Этот предмет может оставаться в природе сотни лет.'
+        },
+        {
+            level: 'Новичок',
+            question: 'Что такое "парниковый эффект"?',
+            options: ['Ощущение тепла в парнике', 'Явление, при котором атмосфера удерживает тепло', 'Загрязнение воздуха', 'Сильный ветер'],
+            answer: 'Явление, при котором атмосфера удерживает тепло',
+            hint: 'Это как одеяло вокруг Земли, которое не даёт теплу уходить в космос.'
+        },
+        // Level 2: Опытный (10 вопросов)
+        {
+            level: 'Опытный',
+            question: 'Почему пестициды долго остаются в природе и попадают в животных, а потом и в нас?',
+            options: ['Специфичность', 'Скорость действия', 'Биоаккумуляция', 'Стойкость'],
+            answer: 'Стойкость',
+            hint: 'Некоторые вещества не разлагаются быстро и могут долго «сидеть» в земле, воде и организмах.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Что происходит с природой, когда люди выкапывают полезные ископаемые прямо с поверхности?',
+            options: ['Увеличение площади лесов', 'Разрушение почвенного слоя', 'Повышение уровня моря', 'Изменение климата'],
+            answer: 'Разрушение почвенного слоя',
+            hint: 'Когда роют большие ямы, что происходит с поверхностью земли и тем, что на ней растет?'
+        },
+        {
+            level: 'Опытный',
+            question: 'Что может случиться с кожей и здоровьем, если на тебя будет светить слишком много вредных солнечных лучей?',
+            options: ['Разрушение клеток', 'Мутации, которые могут быть смертельны', 'Выпадение волос', 'Повышение давления'],
+            answer: 'Мутации, которые могут быть смертельны',
+            hint: 'Слишком сильное солнечное излучение может повредить клетки, что иногда приводит к очень опасным изменениям.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Почему океан становится более кислым, когда в воздухе много углекислого газа?',
+            options: ['Влияние пестицидов', 'Изменение солености воды', 'Поглощение избытка CO₂ из атмосферы', 'Таяние ледников'],
+            answer: 'Поглощение избытка CO₂ из атмосферы',
+            hint: 'Океан умеет забирать углекислый газ из воздуха. Когда его становится слишком много, это меняет химический состав воды.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Как называется процесс, при котором отходы превращаются в энергию?',
+            options: ['Рециклинг', 'Компостирование', 'Эко-деградация', 'Термическая утилизация'],
+            answer: 'Термическая утилизация',
+            hint: 'Этот способ позволяет использовать мусор для получения тепла или электричества.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Что такое "биоразлагаемый" материал?',
+            options: ['Разлагается очень быстро и естественно', 'Не разлагается вообще', 'Разлагается только в лаборатории', 'Разлагается только в космосе'],
+            answer: 'Разлагается очень быстро и естественно',
+            hint: 'Это материал, который могут переработать бактерии и грибы, не оставляя вредных следов.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Почему важно сажать деревья в городе?',
+            options: ['Они украшают улицы', 'Они производят кислород и очищают воздух', 'На них можно вешать объявления', 'Они создают тень'],
+            answer: 'Они производят кислород и очищают воздух',
+            hint: 'Деревья – это природные фильтры воздуха для больших городов.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Что такое "углеродный след"?',
+            options: ['След от грязной обуви', 'Количество выброшенных в атмосферу парниковых газов', 'Путь, который проходит уголь', 'След от шин'],
+            answer: 'Количество выброшенных в атмосферу парниковых газов',
+            hint: 'Это мера того, насколько твоя деятельность влияет на климат. Чем больше — тем хуже.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Почему пластиковые пакеты опасны для морских животных?',
+            options: ['Они слишком тяжелые', 'Они светятся в темноте', 'Животные принимают их за еду', 'Они слишком острые'],
+            answer: 'Животные принимают их за еду',
+            hint: 'Морские черепахи часто путают их с медузами, что приводит к печальным последствиям.'
+        },
+        {
+            level: 'Опытный',
+            question: 'Что такое "компостирование"?',
+            options: ['Сбор мусора на свалке', 'Переработка органических отходов в удобрения', 'Сжигание мусора', 'Закапывание отходов в землю'],
+            answer: 'Переработка органических отходов в удобрения',
+            hint: 'Так можно получить полезное удобрение из пищевых остатков.'
+        },
+        // Level 3: Просветленный (10 вопросов)
+        {
+            level: 'Просветленный',
+            question: 'Кто больше всех влияет на то, что наша планета становится теплее?',
+            options: ['Промышленность', 'Вулканы', 'Природа', 'Человек, а конкретно его хозяйственная деятельность'],
+            answer: 'Человек, а конкретно его хозяйственная деятельность',
+            hint: 'Хотя природа тоже влияет на климат, основной и самый быстрый источник изменений в последние годы связан с человеческой деятельностью.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Как получается, что ядовитые вещества из полей попадают в тела белых медведей и пингвинов?',
+            options: ['Биоразложение', 'Фотосинтез', 'Биоаккумуляция', 'Закисление'],
+            answer: 'Биоаккумуляция',
+            hint: 'Токсины могут накапливаться в организме по цепочке. Мелкая рыбка съедает водоросли, а её — рыбка покрупнее, и так до самого верха пищевой цепи.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Как потепление климата может повлиять на то, как быстро растут леса?',
+            options: ['Увеличение влажности', 'Повышение уровня моря', 'Потепление климата', 'Уменьшение кислорода'],
+            answer: 'Потепление климата',
+            hint: 'Засухи, пожары и смена сезонов влияют на то, как растут деревья. Что именно вызывает эти изменения?'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Что такое "биоразнообразие"?',
+            options: ['Разнообразие животных', 'Разнообразие растений', 'Разнообразие жизни на планете', 'Разнообразие микробов'],
+            answer: 'Разнообразие жизни на планете',
+            hint: 'Это не только животные и растения, но и все организмы, которые живут на Земле.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Какие две главные причины опустынивания?',
+            options: ['Засухи и морозы', 'Обезлесение и неправильное земледелие', 'Ливни и наводнения', 'Вулканическая активность'],
+            answer: 'Обезлесение и неправильное земледелие',
+            hint: 'Когда убирают леса, земля становится беззащитной перед ветрами и дождями, а неправильный подход к земледелию её истощает.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Почему таяние вечной мерзлоты — это опасно для климата?',
+            options: ['Оно вызывает наводнения', 'Высвобождаются огромные запасы метана', 'Там живут опасные бактерии', 'Это создаёт новые водоёмы'],
+            answer: 'Высвобождаются огромные запасы метана',
+            hint: 'Под замёрзшей почвой находятся огромные запасы газа, который в десятки раз сильнее углекислого газа по эффекту.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Как деятельность человека напрямую влияет на вымирание видов?',
+            options: ['Строительство дорог', 'Разрушение мест обитания', 'Использование удобрений', 'Отказ от сортировки мусора'],
+            answer: 'Разрушение мест обитания',
+            hint: 'Чтобы построить дом или фабрику, люди часто уничтожают леса или болота, где живут животные.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Что такое "кислотные дожди" и как они образуются?',
+            options: ['Дождь с лимоном', 'Дождь, содержащий кислоты от загрязнения воздуха', 'Дождь, который льёт очень долго', 'Дождь в тропиках'],
+            answer: 'Дождь, содержащий кислоты от загрязнения воздуха',
+            hint: 'Выбросы с заводов, такие как оксиды серы и азота, соединяются в атмосфере с водяным паром и выпадают в виде осадков.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Какую роль играет ООН в борьбе с изменением климата?',
+            options: ['Организует походы', 'Создает международные соглашения и программы', 'Строит новые заводы', 'Выдаёт гранты'],
+            answer: 'Создает международные соглашения и программы',
+            hint: 'Организация объединяет страны для совместного решения глобальных проблем, таких как изменение климата.'
+        },
+        {
+            level: 'Просветленный',
+            question: 'Как потепление климата влияет на круговорот воды?',
+            options: ['Уменьшает количество осадков', 'Увеличивает испарение и приводит к экстремальным осадкам', 'Замедляет круговорот воды', 'Никак не влияет'],
+            answer: 'Увеличивает испарение и приводит к экстремальным осадкам',
+            hint: 'Чем теплее, тем быстрее испаряется вода, что приводит к более сильным ливням в одних местах и засухам в других.'
+        },
+    ];
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userName = '';
+
+    // Функция для воспроизведения легкого звука клика
+    function playClickSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        } catch (e) {
+            console.error("Audio API not supported or failed to start:", e);
+        }
+    }
+
+    function renderIntroScreen() {
+        const quizContent = document.getElementById('quiz-content');
+        quizContent.innerHTML = `
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-[#2c3e1e] leading-tight">Добро пожаловать, юный герой!</h2>
+            <p class="text-lg md:text-xl text-gray-600 mb-6">Как тебя зовут?</p>
+            <input id="userNameInput" type="text" placeholder="Твоё имя" class="text-center p-3 md:p-4 rounded-full border-2 border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 w-full mb-6">
+            <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-lg md:text-xl shadow-lg transform transition-transform duration-200 hover:scale-105" onclick="startIntro()">
+                Начать миссию!
+            </button>
+        `;
+    }
+
+    function startIntro() {
+        playClickSound();
+        const input = document.getElementById('userNameInput');
+        userName = input.value.trim();
+        if (userName === '') {
+            userName = 'Герой';
+        }
+        renderMainMenu();
+    }
+
+    function renderMainMenu() {
+        const quizContent = document.getElementById('quiz-content');
+        quizContent.innerHTML = `
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-[#2c3e1e] leading-tight">Спаси планету, ${userName}!</h2>
+            <p class="text-lg md:text-xl text-gray-600 mb-6">Выбери свой уровень сложности!</p>
+            <div id="options-container" class="grid gap-4 md:gap-6">
+                <button class="btn-option text-lg md:text-xl py-4 px-6 font-medium rounded-full cursor-pointer hover:bg-green-300 transform transition-all duration-200" onclick="startQuiz('Новичок')">
+                    Уровень 1: Новичок
+                </button>
+                <button class="btn-option text-lg md:text-xl py-4 px-6 font-medium rounded-full cursor-pointer hover:bg-green-300 transform transition-all duration-200" onclick="startQuiz('Опытный')">
+                    Уровень 2: Опытный
+                </button>
+                <button class="btn-option text-lg md:text-xl py-4 px-6 font-medium rounded-full cursor-pointer hover:bg-green-300 transform transition-all duration-200" onclick="startQuiz('Просветленный')">
+                    Уровень 3: Просветленный
+                </button>
+            </div>
+        `;
+    }
+
+    function startQuiz(level) {
+        playClickSound();
+        questions = allQuestions.filter(q => q.level === level);
+        currentQuestionIndex = 0;
+        score = 0;
+        renderQuestion();
+    }
+    
+    function renderQuestion() {
+        const quizContent = document.getElementById('quiz-content');
+        if (currentQuestionIndex >= questions.length) {
+            showResults();
+            return;
+        }
+
+        const questionData = questions[currentQuestionIndex];
+        const levelText = getLevelTitle(questionData.level);
+
+        quizContent.innerHTML = `
+            <div id="quiz-status" class="mb-6 md:mb-8 flex justify-between items-center">
+                <p class="text-sm uppercase font-bold text-green-700 tracking-widest">${levelText}</p>
+                <p class="text-sm uppercase font-bold text-gray-500 tracking-widest">Баллов: ${score}</p>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-8 md:mb-10 text-[#2c3e1e] leading-tight">${questionData.question}</h2>
+            <div id="options-container" class="grid gap-4 md:gap-6">
+                ${questionData.options.map(option => `
+                    <button class="btn-option text-lg md:text-xl py-4 px-6 font-medium rounded-full cursor-pointer hover:bg-green-300 transform transition-all duration-200" onclick="checkAnswer(this, '${option}')">
+                        ${option}
+                    </button>
+                `).join('')}
+            </div>
+            <div id="hint-chat" class="hidden mt-8 chat-container p-6">
+                <p class="text-sm text-gray-600 mb-2">Учитель:</p>
+                <p class="text-md md:text-lg text-gray-800">${questionData.hint}</p>
+                <button class="mt-4 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="document.getElementById('hint-chat').classList.add('hidden')">
+                    Закрыть
+                </button>
+            </div>
+            <div class="mt-8 flex justify-between items-center">
+                <button class="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200" onclick="renderMainMenu()">
+                    ← Вернуться в меню
+                </button>
+                <button class="bg-orange-500 text-white py-2 px-6 rounded-full text-sm hover:bg-orange-600 transition-colors duration-200" onclick="showHint()">
+                    Спросить учителя
+                </button>
+            </div>
+        `;
+    }
+
+    function showHint() {
+        const hintChat = document.getElementById('hint-chat');
+        hintChat.classList.remove('hidden');
+    }
+
+    function getLevelTitle(level) {
+        switch(level) {
+            case 'Новичок': return 'Уровень 1: Новичок';
+            case 'Опытный': return 'Уровень 2: Опытный';
+            case 'Просветленный': return 'Уровень 3: Просветленный';
+            default: return 'Уровень';
+        }
+    }
+
+    function checkAnswer(selectedButton, selectedOption) {
+        playClickSound(); // Play sound on every answer click
+        const questionData = questions[currentQuestionIndex];
+        const allButtons = document.querySelectorAll('.btn-option');
+        allButtons.forEach(btn => btn.classList.add('disabled'));
+
+        if (selectedOption === questionData.answer) {
+            selectedButton.classList.add('correct');
+            score++;
+        } else {
+            selectedButton.classList.add('incorrect');
+            const correctButton = Array.from(allButtons).find(btn => btn.innerText.trim() === questionData.answer);
+            if (correctButton) {
+                correctButton.classList.add('correct');
+            }
+        }
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            renderQuestion();
+        }, 1500);
+    }
+
+    function showResults() {
+        const quizContent = document.getElementById('quiz-content');
+        const totalQuestions = questions.length;
+        const percentage = Math.round((score / totalQuestions) * 100);
+        let message = '';
+        let image = '';
+
+        if (percentage >= 90) {
+            message = `ТЫ СУПЕРГЕРОЙ! Ты настоящий спаситель нашей планеты! Твои знания - это сила!`;
+            image = 'https://placehold.co/200x200/22c55e/ffffff?text=%F0%9F%A4%B8%E2%80%8D%E2%99%82%EF%B8%8F';
+        } else if (percentage >= 70) {
+            message = `ОТЛИЧНО! Ты на верном пути! Продолжай в том же духе, чтобы стать настоящим эко-героем.`;
+            image = 'https://placehold.co/200x200/86efac/ffffff?text=%F0%9F%8C%B1';
+        } else {
+            message = `НЕПЛОХО, НО ЕСТЬ НАД ЧЕМ ПОРАБОТАТЬ! Планета нуждается в тебе! Изучи темы еще раз и попробуй снова.`;
+            image = 'https://placehold.co/200x200/ef4444/ffffff?text=%E2%9A%A0%EF%B8%8F';
+        }
+
+        quizContent.innerHTML = `
+            <div class="text-center p-6 md:p-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-green-700 mb-4">Миссия завершена!</h2>
+                <img src="${image}" alt="Результат" class="mx-auto my-4 w-32 h-32 md:w-48 md:h-48 rounded-full shadow-lg">
+                <p class="text-lg md:text-xl font-semibold mb-2 text-gray-700">Твой результат, ${userName}. Покажи этот результат учителю:</p>
+                <p class="text-xl md:text-2xl font-semibold mb-2">Ты набрал <span class="text-green-600 font-bold">${score} из ${totalQuestions}</span> баллов.</p>
+                <p class="text-lg md:text-xl mb-6 text-gray-700">${message}</p>
+                <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-lg md:text-xl shadow-lg transform transition-transform duration-200 hover:scale-105" onclick="renderMainMenu()">
+                    Начать заново!
+                </button>
+            </div>
+        `;
+    }
+
+    document.addEventListener('DOMContentLoaded', renderIntroScreen);
+</script>
+
+</body>
+</html>
