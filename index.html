@@ -323,6 +323,7 @@
     let currentQuestionIndex = 0;
     let score = 0;
     let userName = '';
+    let userLastName = '';
 
     // Функция для воспроизведения легкого звука клика
     function playClickSound() {
@@ -351,7 +352,8 @@
         quizContent.innerHTML = `
             <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-[#2c3e1e] leading-tight">Добро пожаловать, юный герой!</h2>
             <p class="text-lg md:text-xl text-gray-600 mb-6">Как тебя зовут?</p>
-            <input id="userNameInput" type="text" placeholder="Твоё имя" class="text-center p-3 md:p-4 rounded-full border-2 border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 w-full mb-6">
+            <input id="userNameInput" type="text" placeholder="Имя" class="text-center p-3 md:p-4 rounded-full border-2 border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 w-full mb-4">
+            <input id="userLastNameInput" type="text" placeholder="Фамилия" class="text-center p-3 md:p-4 rounded-full border-2 border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200 w-full mb-6">
             <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full text-lg md:text-xl shadow-lg transform transition-transform duration-200 hover:scale-105" onclick="startIntro()">
                 Начать миссию!
             </button>
@@ -360,8 +362,11 @@
 
     function startIntro() {
         playClickSound();
-        const input = document.getElementById('userNameInput');
-        userName = input.value.trim();
+        const nameInput = document.getElementById('userNameInput');
+        const lastNameInput = document.getElementById('userLastNameInput');
+        userName = nameInput.value.trim();
+        userLastName = lastNameInput.value.trim();
+        
         if (userName === '') {
             userName = 'Герой';
         }
@@ -510,3 +515,5 @@
 
 </body>
 </html>
+
+
